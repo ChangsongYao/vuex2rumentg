@@ -1,9 +1,7 @@
 <template>
   <div id="app" v-cloak>
-    <select @change="selectTimezone($event.target.value)">
-      <option v-for="city in cities" :value="city">{{city}}</option>
-    </select>
-    <ez-clock></ez-clock>
+    <ez-counter></ez-counter>
+    <ez-fast-counter></ez-fast-counter>
   </div>
 </template>
 
@@ -13,85 +11,71 @@
 
   Vue.use(Vuex)
 
-  const modClock = {
+  const modStateFactory = {
     namespaced:true,
-    state:{time:Date.now()},
-    getters:{
-      time_lts(state,getters,rootState,rootGetters){
-        return moment(state.time).tz(rootState.timezone).format('LTS')
-      }
+    state(){
+      return {counter:0}
     },
-    mutations:{SET_TIME(state,val){state.time = val}},
-    actions:{setTime(context,val){context.commit('SET_TIME',val)}}
+    mutations:{
+      INCREASE:state => state.counter++
+    },
+    actions:{
+      inc: context => context.commit('INCREASE')
+    }
+  }
+
+  const modFactory = function(){
+    return {
+      namespaced:true,
+      state:{
+        counter:0
+      },
+      mutations:{
+        INCREASE :state => state.counter ++
+      },
+      actions:{
+        inc: context => context.commit('INCREASE')
+      }
+    }
   }
 
   const store = new Vuex.Store({
-    state:{
-      cities:['Asia/Shanghai','Australia/Melbourne','Africa/Cairo','America/Denver','Europe/London'],
-      timezone:'Asia/Shanghai'
-    },
-    getters:{
-      city: state => state.timezone.split('/')[1]
-    },
-    mutations:{
-      SELECT_TIMEZONE: (state,city) => state.timezone = city
-    },
-    actions:{
-      selectTimezone: (context,city) => context.commit('SELECT_TIMEZONE',city)
-    },
     modules:{
-      m2: modClock
+      m1: modStateFactory,
+      m2: modStateFactory
     }
   });
 
-  const EzClock = {
-    template:`
-  	<div class="clock">
-      <div class="time">{{time}}</div>
-      <div class="tool">
-        <a href="#" @click.prevent>{{city}}</a>
-      </div>
-    </div>
-  `,
-    computed:{
-      ...Vuex.mapGetters('m2',{time:'time_lts'}),
-      ...Vuex.mapGetters(['city'])
-    },
-    methods:Vuex.mapActions('m2',['setTime']),
+  const EzCounter = {
+    template:'<div class="counter">{{counter}}</div>',
+    computed:Vuex.mapState('m1',['counter']),
+    methods: Vuex.mapActions('m1',['inc']),
     created(){
-      setInterval(()=>this.setTime(Date.now()),1000)
+      setInterval(() => this.inc(),1000)
+    }
+  }
+
+  const EzFastCounter = {
+    template:'<div class="counter">{{counter}}</div>',
+    computed:Vuex.mapState('m2',['counter']),
+    methods: Vuex.mapActions('m2',['inc']),
+    created(){
+      setInterval(() => this.inc(),100)
     }
   }
 
   export default {
     name: 'App',
     store:store,
-    computed:Vuex.mapState(['cities','timezone']),
-    methods:Vuex.mapActions(['selectTimezone']),
-    components:{EzClock}
+    components:{EzCounter,EzFastCounter}
   }
 
 </script>
 
 <style>
-  .counter,.clock{
+  .counter{
     font-family:LED;
     font-size:80px;
-    padding:10px;
-  }
-  .clock > * {
-    float:left;
-  }
-  .clock .tool{
-    margin-left:20px;
-  }
-  .clock .tool a{
-    text-decoration:none;
-    font-size:20px;
-    background:#333;
-    color:#fff;
-    padding:2px 10px;
-    border-radius:10px;
   }
   [v-cloak]:after{
     content:' ';
