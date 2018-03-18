@@ -8,31 +8,9 @@
     <script src="static/lib/moment.min.js"></script>
   </head>
   <body>
-  <div id="app" v-cloak>
-    <ez-note-list></ez-note-list>
-    <ez-note-editor></ez-note-editor>
+  <div id="app">
   </div>
 
-  <template id="tpl-list">
-    <div class="note-list">
-      <div class="toolbar">
-        <button @click="add">新建备忘</button>
-      </div>
-      <ul>
-        <li v-for="note in notes"
-            @click="activate(note)"
-            :class="{active:active==note}">
-          {{note.text | trim | slice(0,20) }}
-        </li>
-      </ul>
-    </div>
-  </template>
-
-  <template id="tpl-editor">
-    <div class="note-editor">
-      <textarea v-model="note.text"></textarea>
-    </div>
-  </template>
     <!-- built files will be auto injected -->
   </body>
 </html>

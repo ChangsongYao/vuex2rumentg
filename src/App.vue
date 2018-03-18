@@ -1,7 +1,7 @@
 <template>
   <div id="app" v-cloak>
-    <ez-note-list></ez-note-list>
-    <ez-note-editor></ez-note-editor>
+    <ez-counter></ez-counter>
+    <ez-clock></ez-clock>
   </div>
 </template>
 
@@ -11,104 +11,66 @@
 
   Vue.use(Vuex)
 
+  const modCounter = {
+    state:{counter:0},
+    mutations:{ INCREASE(state){state.counter++} },
+    actions:{ inc(context){context.commit('INCREASE') }}
+  }
+
+  const modClock = {
+    state:{time:Date.now()},
+    mutations:{SET_TIME(state,val){state.time = val}},
+    actions:{ setTime(context,val){ context.commit('SET_TIME',val)}}
+  }
+
   const store = new Vuex.Store({
-    state:{
-      notes:[],
-      active:{}
-    },
-    mutations:{
-      NEW_NOTE(state,note){
-        state.notes.push(note);
-      },
-      ACTIVATE_NOTE(state,note){
-        state.active = note;
-      }
+    modules:{
+      m1: modCounter,
+      m2: modClock
     }
   });
 
-  const EzNoteList = {
-    template:'#tpl-list',
-    computed:Vuex.mapState(['notes','active']),
-    methods:{
-      add(){
-        let note = {
-          text: '备忘 - ' + (this.notes.length + 1) + '#'
-        };
-        this.new(note);
-        this.activate(note);
-      },
-      new(note) { this.$store.commit('NEW_NOTE',note) },
-      activate(note) { this.$store.commit('ACTIVATE_NOTE',note)}
+  const EzCounter = {
+    template:'<div class="counter">{{counter}}</div>',
+    computed:{
+      counter(){ return this.$store.state.m1.counter }
     },
-    filters:{
-      trim(v){
-        return v.trim();
-      },
-      slice(v,start,end){
-        return v.slice(start,end);
-      }
+    methods:{
+      inc(){ this.$store.dispatch('inc')}
+    },
+    created(){
+      setInterval(()=>this.inc(),1000)
     }
-  };
+  }
 
-  const EzNoteEditor = {
-    template:'#tpl-editor',
-    computed:Vuex.mapState({note: 'active'})
-  };
+  const EzClock = {
+    template:'<div class="clock">{{time}}</div>',
+    computed:{
+      time(){ return moment(this.$store.state.m2.time).format('LTS')}
+    },
+    methods:{
+      setTime(){
+        this.$store.dispatch('setTime',Date.now())
+      }
+    },
+    created(){
+      setInterval(()=>this.setTime(),1000)
+    }
+  }
 
   export default {
     name: 'App',
     store:store,
-    components:{ EzNoteList,EzNoteEditor }
+    components:{EzCounter,EzClock}
   }
 
 </script>
 
 <style>
-  html,body,#app{
-    height:100%;
-    padding:0;
-    margin:0;
-    overflow:hidden;
-  }
-  #app{
-    display:flex;
-  }
-  .note-list{
-    width:230px;
-    display:flex;
-    flex-direction:column;
-    background:#fafafa;
-  }
-  .note-list .toolbar{
-    height:30px;
-    line-height:30px;
-    border-bottom:1px solid #ccc;
-  }
-  .note-list ul{
-    flex:1;
-    list-style:none;
-    padding:0;
-    margin:0;
-    overflow-y:auto;
-  }
-  .note-list li{
-    cursor:pointer;
-    padding:5px;
-  }
-  .note-list li.active{
-    background:blue;
-    color:white;
-  }
-  .note-editor{
-    flex:1;
-  }
-  .note-editor textarea{
-    width:100%;
-    height:100%;
-    resize:none;
-    outline:none;
-    border:none;
-    border-left:1px solid #ccc;
+  .counter,.clock{
+    font-family:LED;
+    font-size:80px;
+    padding:10px;
   }
   [v-cloak]:after{
     content:' ';
