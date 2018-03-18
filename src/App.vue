@@ -28,21 +28,17 @@
 
   const EzNoteList = {
     template:'#tpl-list',
-    computed:Vuex.mapState({
-      notes:state => state.notes,
-      active: state => state.active
-    }),
+    computed:Vuex.mapState(['notes','active']),
     methods:{
       add(){
         let note = {
           text: '备忘 - ' + (this.notes.length + 1) + '#'
         };
-        this.$store.commit('NEW_NOTE',note);
+        this.new(note);
         this.activate(note);
       },
-      activate(note){
-        this.$store.commit('ACTIVATE_NOTE',note);
-      }
+      new(note) { this.$store.commit('NEW_NOTE',note) },
+      activate(note) { this.$store.commit('ACTIVATE_NOTE',note)}
     },
     filters:{
       trim(v){
