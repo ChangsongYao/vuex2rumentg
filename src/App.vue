@@ -1,44 +1,69 @@
 <template>
   <div id="app" v-cloak>
     <button @click="reset">RESET</button>
-    <div class="counter">{{counter}}</div>
+    <ez-counter></ez-counter>
   </div>
 </template>
 
 <script>
+  import Vue from 'vue'
+  import Vuex from 'vuex'
 
-export default {
-  name: 'App',
-  data:function () {
-    return{
+  Vue.use(Vuex)
+  const store = new Vuex.Store({
+    state: {
       counter: 0
     }
-  },
-  methods:{
-    reset(){
-      this.counter = 0;
+  })
+
+  const EzCounter = {
+    template: '<div class="counter">{{counter}}</div>',
+    computed: {
+      counter: {
+        get() {
+          return this.$store.state.counter
+        },
+        set(v) {
+          this.$store.state.counter = v
+        }
+      }
+    },
+    created() {
+      setInterval(() => this.counter++, 100);
     }
-  },
-  created(){
-    setInterval(()=>this.counter++,100);
   }
-}
+
+  export default {
+    name: 'App', store: store,
+    methods: {
+      reset() {
+        this.$store.state.counter = 0;
+      }
+    },
+    components: {EzCounter}
+  }
 </script>
 
 <style>
-  .counter{
-    font-family:LED;
-    font-size:100px;
+  .counter {
+    font-family: LED;
+    font-size: 100px;
   }
-  [v-cloak]:after{
-    content:' ';
-    display:block;
-    border-bottom:2px solid red;
+
+  [v-cloak]:after {
+    content: ' ';
+    display: block;
+    border-bottom: 2px solid red;
     animation: progress 2s infinite;
   }
-  @keyframes progress{
-    0%{width:0%}
-    100%{width:90%}
+
+  @keyframes progress {
+    0% {
+      width: 0%
+    }
+    100% {
+      width: 90%
+    }
   }
 
 </style>
