@@ -1,9 +1,10 @@
 <template>
   <div id="app" v-cloak>
-    <button @click="register">添加计数器</button>
-    <button @click="unregister">删除计数器</button>
-    <div>
-      <ez-counter v-for="counter in counters" :ns="counter"></ez-counter>
+    <button @click="reset">复位计数器</button>
+    <button @click="clearLogs">清理日志</button>
+    <ez-counter></ez-counter>
+    <div v-for="log in logs" class="log" @click="time_travel(log)">
+      {{log.ts | tformat }} {{log.mutation.type}}
     </div>
   </div>
 </template>
@@ -14,55 +15,55 @@
 
   Vue.use(Vuex)
 
-  const modCounter = {
-    namespaced:true,
-    state(){
-      return {counter:0}
+  const _vm = new Vue({
+    data:{logs:[]}
+  });
+
+  const ezLoggerPlugin = store => {
+    store.subscribe((mutation,state)=>{
+      _vm.logs.unshift({mutation:mutation,ts:Date.now()})
+      if(_vm.logs.length>20) _vm.logs.pop();
+    })
+  };
+
+  const store = new Vuex.Store({
+    plugins:[ezLoggerPlugin],
+    state:{
+      counter:0
     },
     mutations:{
-      INCREASE:state => state.counter++
+      INCREASE(state){ state.counter++; },
+      RESET(state){ state.counter = 0}
     },
     actions:{
-      inc: context => context.commit('INCREASE')
+      inc(context){ context.commit('INCREASE') },
+      reset(context) { context.commit('RESET')}
     }
-  }
+  });
 
   const EzCounter = {
-    props:['ns'],
     template:'<div class="counter">{{counter}}</div>',
-    computed:{
-      counter(){ return this.$store.state[this.ns].counter }
-    },
-    methods: {
-      inc(){ this.$store.dispatch(this.ns+'/inc') }
-    },
+    computed: Vuex.mapState(['counter']),
+    methods:Vuex.mapActions(['inc']),
     created(){
-      setInterval(() => this.inc(),100)
+      setInterval(()=>this.inc(),2000)
     }
   }
-
-
-  const store = new Vuex.Store({});
 
   export default {
     name: 'App',
-    data:function () {
-      return{
-        counters:[]
+    store:store,
+    computed:{
+      logs(){ return _vm.logs }
+    },
+    methods: {
+      ...Vuex.mapActions(['reset']),
+      clearLogs(){
+        _vm.logs = [];
       }
     },
-    store:store,
-    methods:{
-      register(){
-        let name = 'm' + (this.counters.length+1);
-        this.$store.registerModule(name,modCounter);
-        this.counters.push(name);
-      },
-      unregister(){
-        let name = 'm' + this.counters.length;
-        this.counters.pop();
-        this.$store.unregisterModule(name);
-      }
+    filters:{
+      tformat(v){ return moment(v).format('HH:mm:ss') }
     },
     components:{EzCounter}
   }
@@ -72,11 +73,21 @@
 <style>
   .counter{
     font-family:LED;
-    font-size:60px;
-    margin:5px;
+    font-size:100px;
+  }
+  .log{
+    cursor:pointer;
     padding:5px;
+  }
+  .log:hover{
     background:#f0f0f0;
-    display:inline-block;
+  }
+  .log span{
+    display:none;
+    float:right;
+  }
+  .log:hover span{
+    display:block;
   }
   [v-cloak]:after{
     content:' ';
