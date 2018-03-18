@@ -22,12 +22,12 @@
     template:'#tpl-list',
     computed:{
       notes:{
-        get(){ return store.state.notes;},
-        set(v){ store.state.notes = v;}
+        get(){ return this.$store.state.notes;},
+        set(v){ this.$store.state.notes = v;}
       },
       active:{
-        get(){ return store.state.active;},
-        set(v){ store.state.active = v;}
+        get(){ return this.$store.state.active;},
+        set(v){ this.$store.state.active = v;}
       }
     },
     methods:{
@@ -53,14 +53,15 @@
     template:'#tpl-editor',
     computed:{
       note:{
-        get(){ return store.state.active;},
-        set(v){ store.state.active = v;}
+        get(){ return this.$store.state.active;},
+        set(v){ this.$store.state.active = v;}
       }
     }
   };
 
   export default {
     name: 'App',
+    store:store,
     components:{ EzNoteList,EzNoteEditor }
   }
 
