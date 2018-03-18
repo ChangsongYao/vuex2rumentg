@@ -1,6 +1,7 @@
 <template>
   <div id="app" v-cloak>
-    <ez-clock></ez-clock>
+    <div class="counter">{{counter}}</div>
+    <pre>{{ $store._mutations | dump }}</pre>
   </div>
 </template>
 
@@ -11,38 +12,40 @@
   Vue.use(Vuex)
   const store = new Vuex.Store({
     state:{
-      time:Date.now()
+      counter:0
     },
-    getters:{
-      time_lts: state => moment(state.time).format('LTS')
+    mutations:{
+      INCREASE:state => state.counter++,
+      RESET: state => state.counter = 0
     }
   });
-
-  const EzClock = {
-    template:'<div class="clock">{{time}}</div>',
-    computed:{
-      time(){ return this.$store.getters.time_lts}
-    },
-    methods:{
-      setTime(){  this.$store.state.time = Date.now() }
-    },
-    created(){
-      setInterval(()=>this.setTime(),1000)
-    }
-  };
 
   export default {
     name: 'App',
     store:store,
-    components:{EzClock}
+    computed:{
+      counter(){ return this.$store.state.counter}
+    },
+    created(){
+      setInterval(()=>this.$store.commit('INCREASE'),100);
+    },
+    filters:{
+      dump(o){
+        return JSON.stringify(o,(k,v)=>{
+          if(Array.isArray(v)){
+            return '['+ v.join(',') + ']'
+          }
+          return v;
+        },'\t')
+      }
+    }
   }
 </script>
 
 <style>
-  .clock{
+  .counter{
     font-family:LED;
-    font-size:80px;
-    letter-spacing:10px;
+    font-size:100px;
   }
   [v-cloak]:after{
     content:' ';
