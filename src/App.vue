@@ -1,7 +1,6 @@
 <template>
   <div id="app" v-cloak>
-    <button @click="$store.state.counter=0">RESET</button>
-    <ez-counter></ez-counter>
+    <ez-clock></ez-clock>
   </div>
 </template>
 
@@ -12,34 +11,38 @@
   Vue.use(Vuex)
   const store = new Vuex.Store({
     state:{
-      counter:0
+      time:Date.now()
+    },
+    getters:{
+      time_lts: state => moment(state.time).format('LTS')
     }
   });
 
-  const EzCounter = {
-    template:'<div class="counter">{{counter}}</div>',
+  const EzClock = {
+    template:'<div class="clock">{{time}}</div>',
     computed:{
-      counter:{
-        get(){ return this.$store.state.counter},
-        set(v){ this.$store.state.counter = v}
-      }
+      time(){ return this.$store.getters.time_lts}
+    },
+    methods:{
+      setTime(){  this.$store.state.time = Date.now() }
     },
     created(){
-      setInterval(()=>this.counter++,100);
+      setInterval(()=>this.setTime(),1000)
     }
   };
 
   export default {
     name: 'App',
     store:store,
-    components:{EzCounter}
+    components:{EzClock}
   }
 </script>
 
 <style>
-  .counter{
+  .clock{
     font-family:LED;
-    font-size:100px;
+    font-size:80px;
+    letter-spacing:10px;
   }
   [v-cloak]:after{
     content:' ';
