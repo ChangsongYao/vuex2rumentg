@@ -1,12 +1,6 @@
 <template>
-  <div id="app" v-cloak>
-    <button @click="reset">复位计数器</button>
-    <button @click="clearLogs">清理日志</button>
-    <ez-counter></ez-counter>
-    <div v-for="log in logs" class="log" @click="time_travel(log)">
-      {{log.ts | tformat }} {{log.mutation.type}} {{log.state.counter}}
-      <span>时光回溯</span>
-    </div>
+  <div id="app">
+    <div class="counter"></div>
   </div>
 </template>
 
@@ -15,82 +9,28 @@
   import Vuex from 'vuex'
 
   Vue.use(Vuex)
-  let _vm = new Vue({
-    data:{logs:[]}
-  });
-
-  const ezLoggerPlugin = store => {
-    store.subscribe((mutation,state)=>{
-      let s = _.cloneDeep(state);
-      _vm.logs.unshift({mutation:mutation,state:s,ts:Date.now()})
-      if(_vm.logs.length>20) _vm.logs.pop();
-    })
-  };
-
   const store = new Vuex.Store({
-    plugins:[ezLoggerPlugin],
     state:{
       counter:0
     },
-    mutations:{
-      INCREASE(state){ state.counter++; },
-      RESET(state){ state.counter = 0}
-    },
-    actions:{
-      inc(context){ context.commit('INCREASE') },
-      reset(context) { context.commit('RESET')}
-    }
   });
 
-  const EzCounter = {
-    template:'<div class="counter">{{counter}}</div>',
-    computed: Vuex.mapState(['counter']),
-    methods:Vuex.mapActions(['inc']),
-    created(){
-      setInterval(()=>this.inc(),2000)
-    }
-  }
+  new Vue().$watch(()=>{
+    let el = document.querySelector('.counter');
+    el.textContent = store.state.counter;
+  })
+
+  setInterval(()=>store.state.counter++,100);
 
   export default {
-    name: 'App',
-    store:store,
-    computed:{
-      logs(){ return _vm.logs }
-    },
-    methods: {
-      ...Vuex.mapActions(['reset']),
-      clearLogs(){
-        _vm.logs = [];
-      },
-      time_travel(log){
-        this.$store.replaceState(log.state);
-      }
-    },
-    filters:{
-      tformat(v){ return moment(v).format('HH:mm:ss') }
-    },
-    components:{EzCounter}
+    name: 'App'
   }
 </script>
 
 <style>
   .counter{
-    font-family:LED;
+    font-family: LED;
     font-size:100px;
-  }
-  .log{
-    cursor:pointer;
-    padding:5px;
-  }
-  .log:hover{
-    background:#f0f0f0;
-  }
-  .log span{
-    display:none;
-    float:right;
-  }
-  .log:hover span{
-    display:block;
   }
   [v-cloak]:after{
     content:' ';
