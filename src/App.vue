@@ -11,8 +11,8 @@
 
   Vue.use(Vuex)
 
-  const store = new Vue({
-    data:{
+  const store = new Vuex.Store({
+    state:{
       notes:[],
       active:{}
     }
@@ -22,12 +22,12 @@
     template:'#tpl-list',
     computed:{
       notes:{
-        get(){ return store.notes;},
-        set(v){ store.notes = v;}
+        get(){ return store.state.notes;},
+        set(v){ store.state.notes = v;}
       },
       active:{
-        get(){ return store.active;},
-        set(v){ store.active = v;}
+        get(){ return store.state.active;},
+        set(v){ store.state.active = v;}
       }
     },
     methods:{
@@ -53,8 +53,8 @@
     template:'#tpl-editor',
     computed:{
       note:{
-        get(){ return store.active;},
-        set(v){ store.active = v;}
+        get(){ return store.state.active;},
+        set(v){ store.state.active = v;}
       }
     }
   };
