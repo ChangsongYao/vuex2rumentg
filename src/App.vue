@@ -1,12 +1,7 @@
 <template>
   <div id="app" v-cloak>
-    <input :value="q" @change="search($event.target.value)" placeholder="search sth.">
-    <div v-html="status" class="status"></div>
-    <div class="result">
-      <div class="item" v-for="item in result">
-        {{item.title}}
-      </div>
-    </div>
+    <ez-note-list></ez-note-list>
+    <ez-note-editor></ez-note-editor>
   </div>
 </template>
 
@@ -16,77 +11,105 @@
 
   Vue.use(Vuex)
 
-  const fakeSearch = (q,cb) => {
-    let ret = [];
+  const bus = new Vue();
 
-    for(let i=1;i<11;i++) ret.push({
-      title:'result item ' + i + '#'
-    });
-
-    setTimeout(()=>cb(ret),2000)
-  }
-
-  const store = new Vuex.Store({
-    state:{
-      q:'',
-      result:[],
-      status:''
+  const EzNoteList = {
+    template:'#tpl-list',
+    data(){
+      return {
+        notes:[],
+        active:{}
+      };
     },
-    mutations:{
-      UPDATE_QUERY:(state,value) => state.q = value,
-      UPDATE_STATUS:(state,value) => state.status = value,
-      UPDATE_RESULT:(state,value) => state.result = value
+    methods:{
+      add(){
+        let note = {
+          text: '备忘 - ' + (this.notes.length + 1) + '#'
+        };
+        this.notes.unshift(note);
+        this.active = note;
+      }
     },
-    actions:{
-      search(context,q){
-        context.commit('UPDATE_RESULT',[])
-        context.commit('UPDATE_QUERY',q)
-        context.commit('UPDATE_STATUS','searching <b>' + q +'</b>...')
-
-        fakeSearch(q,result =>{
-          context.commit('UPDATE_STATUS','')
-          context.commit('UPDATE_RESULT',result)
-        })
+    filters:{
+      trim(v){
+        return v.trim();
+      },
+      slice(v,start,end){
+        return v.slice(start,end);
+      }
+    },
+    watch:{
+      active(nv){
+        bus.$emit('NOTE_CHANGED',nv);
       }
     }
-  })
+  };
+
+  const EzNoteEditor = {
+    template:'#tpl-editor',
+    data(){
+      return {
+        note:{text:''}
+      }
+    },
+    created(){
+      bus.$on('NOTE_CHANGED',note => this.note = note);
+    }
+  };
 
   export default {
     name: 'App',
-    store:store,
-    computed:{
-      ...Vuex.mapState(['result','status']),
-      q:{
-        get(){return this.$store.state.q},
-        set(v){ this.$store.commit('set_q',v)}
-      }
-    },
-    methods:{
-      search(q){
-        this.$store.dispatch('search',q);
-      }
-    }
+    components:{ EzNoteList,EzNoteEditor }
   }
 
 </script>
 
 <style>
-  input{
-    line-height:40px;
+  html,body,#app{
+    height:100%;
+    padding:0;
+    margin:0;
+    overflow:hidden;
+  }
+  #app{
+    display:flex;
+  }
+  .note-list{
+    width:230px;
+    display:flex;
+    flex-direction:column;
+    background:#fafafa;
+  }
+  .note-list .toolbar{
+    height:30px;
+    line-height:30px;
+    border-bottom:1px solid #ccc;
+  }
+  .note-list ul{
+    flex:1;
+    list-style:none;
+    padding:0;
+    margin:0;
+    overflow-y:auto;
+  }
+  .note-list li{
+    cursor:pointer;
+    padding:5px;
+  }
+  .note-list li.active{
+    background:blue;
+    color:white;
+  }
+  .note-editor{
+    flex:1;
+  }
+  .note-editor textarea{
     width:100%;
-  }
-  .status{
-    padding:10px;
-  }
-  .result{
-    margin-top:10px;
-  }
-  .item{
-    line-height:50px;
-    height:50px;
-    margin-bottom:5px;
-    padding:0 10px;
-    background:#e1efe4;
+    height:100%;
+    resize:none;
+    outline:none;
+    border:none;
+    border-left:1px solid #ccc;
   }
   [v-cloak]:after{
     content:' ';
