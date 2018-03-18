@@ -1,7 +1,8 @@
 <template>
   <div id="app" v-cloak>
-    <button>复位计数器</button>
-    <ez-counter></ez-counter>
+    <select @change="selectTimezone($event.target.value)">
+      <option v-for="city in cities" :value="city">{{city}}</option>
+    </select>
     <ez-clock></ez-clock>
   </div>
 </template>
@@ -12,46 +13,50 @@
 
   Vue.use(Vuex)
 
-  const modCounter = {
-    namespaced:true,
-    state:{counter:0},
-    mutations:{
-      INCREASE:state => state.counter++,
-      RESET:state => state.counter = 0
-    },
-    actions:{
-      inc:context => context.commit('INCREASE'),
-      reset: context => context.commit('RESET')
-    }
-  }
-
   const modClock = {
     namespaced:true,
     state:{time:Date.now()},
-    getters:{time_lts: state => moment(state.time).format('LTS') },
-    mutations:{SET_TIME:(state,val) => state.time = val},
-    actions:{setTime : (context,val) => context.commit('SET_TIME',val) }
+    getters:{
+      time_lts(state,getters,rootState,rootGetters){
+        return moment(state.time).tz(rootState.timezone).format('LTS')
+      }
+    },
+    mutations:{SET_TIME(state,val){state.time = val}},
+    actions:{setTime(context,val){context.commit('SET_TIME',val)}}
   }
 
   const store = new Vuex.Store({
+    state:{
+      cities:['Asia/Shanghai','Australia/Melbourne','Africa/Cairo','America/Denver','Europe/London'],
+      timezone:'Asia/Shanghai'
+    },
+    getters:{
+      city: state => state.timezone.split('/')[1]
+    },
+    mutations:{
+      SELECT_TIMEZONE: (state,city) => state.timezone = city
+    },
+    actions:{
+      selectTimezone: (context,city) => context.commit('SELECT_TIMEZONE',city)
+    },
     modules:{
-      m1: modCounter,
       m2: modClock
     }
   });
 
-  const EzCounter = {
-    template:'<div class="counter">{{counter}}</div>',
-    computed: Vuex.mapState('m1',['counter']),
-    methods:Vuex.mapActions('m1',['inc']),
-    created(){
-      setInterval(()=>this.inc(),1000)
-    }
-  }
-
   const EzClock = {
-    template:'<div class="clock">{{time}}</div>',
-    computed:Vuex.mapGetters('m2',{time:'time_lts'}),
+    template:`
+  	<div class="clock">
+      <div class="time">{{time}}</div>
+      <div class="tool">
+        <a href="#" @click.prevent>{{city}}</a>
+      </div>
+    </div>
+  `,
+    computed:{
+      ...Vuex.mapGetters('m2',{time:'time_lts'}),
+      ...Vuex.mapGetters(['city'])
+    },
     methods:Vuex.mapActions('m2',['setTime']),
     created(){
       setInterval(()=>this.setTime(Date.now()),1000)
@@ -61,7 +66,9 @@
   export default {
     name: 'App',
     store:store,
-    components:{EzCounter,EzClock}
+    computed:Vuex.mapState(['cities','timezone']),
+    methods:Vuex.mapActions(['selectTimezone']),
+    components:{EzClock}
   }
 
 </script>
@@ -71,6 +78,20 @@
     font-family:LED;
     font-size:80px;
     padding:10px;
+  }
+  .clock > * {
+    float:left;
+  }
+  .clock .tool{
+    margin-left:20px;
+  }
+  .clock .tool a{
+    text-decoration:none;
+    font-size:20px;
+    background:#333;
+    color:#fff;
+    padding:2px 10px;
+    border-radius:10px;
   }
   [v-cloak]:after{
     content:' ';
