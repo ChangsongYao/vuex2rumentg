@@ -1,28 +1,44 @@
 <template>
-  <div id="app">
-    <img src="./assets/logo.png">
-    <HelloWorld/>
+  <div id="app" v-cloak>
+    <button @click="reset">RESET</button>
+    <div class="counter">{{counter}}</div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld'
 
 export default {
   name: 'App',
-  components: {
-    HelloWorld
+  data:function () {
+    return{
+      counter: 0
+    }
+  },
+  methods:{
+    reset(){
+      this.counter = 0;
+    }
+  },
+  created(){
+    setInterval(()=>this.counter++,100);
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+  .counter{
+    font-family:LED;
+    font-size:100px;
+  }
+  [v-cloak]:after{
+    content:' ';
+    display:block;
+    border-bottom:2px solid red;
+    animation: progress 2s infinite;
+  }
+  @keyframes progress{
+    0%{width:0%}
+    100%{width:90%}
+  }
+
 </style>
