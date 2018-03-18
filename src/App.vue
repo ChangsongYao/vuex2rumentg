@@ -4,7 +4,8 @@
     <button @click="clearLogs">清理日志</button>
     <ez-counter></ez-counter>
     <div v-for="log in logs" class="log" @click="time_travel(log)">
-      {{log.ts | tformat }} {{log.mutation.type}}
+      {{log.ts | tformat }} {{log.mutation.type}} {{log.state.counter}}
+      <span>时光回溯</span>
     </div>
   </div>
 </template>
@@ -21,7 +22,8 @@
 
   const ezLoggerPlugin = store => {
     store.subscribe((mutation,state)=>{
-      _vm.logs.unshift({mutation:mutation,ts:Date.now()})
+      let s = _.cloneDeep(state);
+      _vm.logs.unshift({mutation:mutation,state:s,ts:Date.now()})
       if(_vm.logs.length>20) _vm.logs.pop();
     })
   };
@@ -60,6 +62,9 @@
       ...Vuex.mapActions(['reset']),
       clearLogs(){
         _vm.logs = [];
+      },
+      time_travel(log){
+        this.$store.replaceState(log.state);
       }
     },
     filters:{
