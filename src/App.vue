@@ -17,6 +17,10 @@
     mutations:{
       INCREASE(state){ state.counter++ },
       RESET(state){ state.counter = 0 }
+    },
+    actions:{
+      inc(context){ context.commit('INCREASE') },
+      reset(context){ context.commit('RESET') }
     }
   })
 
@@ -26,7 +30,7 @@
       counter(){ return this.$store.state.counter }
     },
     methods:{
-      inc() { this.$store.commit('INCREASE') }
+      inc() { this.$store.dispatch('inc') }
     },
     created(){
       setInterval(()=>this.inc(),100);
