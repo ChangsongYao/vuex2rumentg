@@ -12,15 +12,17 @@
   Vue.use(Vuex)
 
   const modCounter = {
+    namespaced:true,
     state:{counter:0},
     mutations:{ INCREASE(state){state.counter++} },
-    actions:{ inc(context){context.commit('INCREASE') }}
+    actions:{ inc(context){context.commit('INCREASE')}}
   }
 
   const modClock = {
+    namespaced:true,
     state:{time:Date.now()},
     mutations:{SET_TIME(state,val){state.time = val}},
-    actions:{ setTime(context,val){ context.commit('SET_TIME',val)}}
+    actions:{ setTime(context,val){context.commit('SET_TIME',val)}}
   }
 
   const store = new Vuex.Store({
@@ -36,7 +38,7 @@
       counter(){ return this.$store.state.m1.counter }
     },
     methods:{
-      inc(){ this.$store.dispatch('inc')}
+      inc(){ this.$store.dispatch('m1/inc')}
     },
     created(){
       setInterval(()=>this.inc(),1000)
@@ -50,7 +52,7 @@
     },
     methods:{
       setTime(){
-        this.$store.dispatch('setTime',Date.now())
+        this.$store.dispatch('m2/setTime',Date.now())
       }
     },
     created(){
