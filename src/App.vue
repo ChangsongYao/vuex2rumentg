@@ -1,7 +1,6 @@
 <template>
-  <div id="app" v-cloak>
-    <div class="counter">{{counter}}</div>
-    <pre>{{ $store._actions | dump }}</pre>
+  <div id="app">
+    <ez-counter></ez-counter>
   </div>
 </template>
 
@@ -27,28 +26,22 @@
     }
   });
 
-  export default {
-    name: 'App',
-    store:store,
-    computed:{
-      counter(){ return this.$store.state.counter }
-    },
+  const EzCounter = {
+    template: '<div class="counter">{{counter}}</div>',
+    computed:Vuex.mapState(['counter']),
     methods:{
       inc(){ this.$store.dispatch('inc') }
     },
     created(){
       setInterval(()=>this.inc(),100);
-    },
-    filters:{
-      dump(o){
-        return JSON.stringify(o,(k,v)=>{
-          if(Array.isArray(v)){
-            return '['+ v.join(',') + ']'
-          }
-          return v;
-        },'\t')
-      }
     }
+
+  };
+
+  export default {
+    name: 'App',
+    store:store,
+    components:{EzCounter}
   }
 
 </script>
