@@ -1,7 +1,10 @@
 <template>
   <div id="app" v-cloak>
-    <ez-counter></ez-counter>
-    <ez-fast-counter></ez-fast-counter>
+    <button @click="register">添加计数器</button>
+    <button @click="unregister">删除计数器</button>
+    <div>
+      <ez-counter v-for="counter in counters" :ns="counter"></ez-counter>
+    </div>
   </div>
 </template>
 
@@ -11,7 +14,7 @@
 
   Vue.use(Vuex)
 
-  const modStateFactory = {
+  const modCounter = {
     namespaced:true,
     state(){
       return {counter:0}
@@ -24,50 +27,44 @@
     }
   }
 
-  const modFactory = function(){
-    return {
-      namespaced:true,
-      state:{
-        counter:0
-      },
-      mutations:{
-        INCREASE :state => state.counter ++
-      },
-      actions:{
-        inc: context => context.commit('INCREASE')
-      }
-    }
-  }
-
-  const store = new Vuex.Store({
-    modules:{
-      m1: modStateFactory,
-      m2: modStateFactory
-    }
-  });
-
   const EzCounter = {
+    props:['ns'],
     template:'<div class="counter">{{counter}}</div>',
-    computed:Vuex.mapState('m1',['counter']),
-    methods: Vuex.mapActions('m1',['inc']),
-    created(){
-      setInterval(() => this.inc(),1000)
-    }
-  }
-
-  const EzFastCounter = {
-    template:'<div class="counter">{{counter}}</div>',
-    computed:Vuex.mapState('m2',['counter']),
-    methods: Vuex.mapActions('m2',['inc']),
+    computed:{
+      counter(){ return this.$store.state[this.ns].counter }
+    },
+    methods: {
+      inc(){ this.$store.dispatch(this.ns+'/inc') }
+    },
     created(){
       setInterval(() => this.inc(),100)
     }
   }
 
+
+  const store = new Vuex.Store({});
+
   export default {
     name: 'App',
+    data:function () {
+      return{
+        counters:[]
+      }
+    },
     store:store,
-    components:{EzCounter,EzFastCounter}
+    methods:{
+      register(){
+        let name = 'm' + (this.counters.length+1);
+        this.$store.registerModule(name,modCounter);
+        this.counters.push(name);
+      },
+      unregister(){
+        let name = 'm' + this.counters.length;
+        this.counters.pop();
+        this.$store.unregisterModule(name);
+      }
+    },
+    components:{EzCounter}
   }
 
 </script>
@@ -75,7 +72,11 @@
 <style>
   .counter{
     font-family:LED;
-    font-size:80px;
+    font-size:60px;
+    margin:5px;
+    padding:5px;
+    background:#f0f0f0;
+    display:inline-block;
   }
   [v-cloak]:after{
     content:' ';
