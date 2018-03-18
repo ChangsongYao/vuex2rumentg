@@ -14,19 +14,25 @@
     state:{
       counter:0
     }
-  })
+  });
 
   const EzCounter = {
-    template:'<div class="counter">{{$store.state.counter}}</div>'
-  }
+    template:'<div class="counter">{{counter}}</div>',
+    computed:{
+      counter:{
+        get(){ return this.$store.state.counter},
+        set(v){ this.$store.state.counter = v}
+      }
+    },
+    created(){
+      setInterval(()=>this.counter++,100);
+    }
+  };
 
   export default {
     name: 'App',
     store:store,
-    components:{EzCounter},
-    created(){
-      setInterval(()=>this.$store.state.counter++,100);
-    }
+    components:{EzCounter}
   }
 </script>
 
