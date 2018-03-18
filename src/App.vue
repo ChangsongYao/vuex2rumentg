@@ -1,7 +1,7 @@
 <template>
   <div id="app" v-cloak>
-    <input type="number" v-model="counter">
     <div class="counter">{{counter}}</div>
+    <pre>{{ $store._actions | dump }}</pre>
   </div>
 </template>
 
@@ -18,9 +18,11 @@
     mutations:{
       INCREASE(state){
         state.counter++;
-      },
-      RESET(state,val){
-        state.counter = val;
+      }
+    },
+    actions:{
+      inc(context){
+        context.commit('INCREASE');
       }
     }
   });
@@ -29,9 +31,22 @@
     name: 'App',
     store:store,
     computed:{
-      counter:{
-        get() { return this.$store.state.counter},
-        set(v){ this.$store.commit('RESET',v)}
+      counter(){ return this.$store.state.counter }
+    },
+    methods:{
+      inc(){ this.$store.dispatch('inc') }
+    },
+    created(){
+      setInterval(()=>this.inc(),100);
+    },
+    filters:{
+      dump(o){
+        return JSON.stringify(o,(k,v)=>{
+          if(Array.isArray(v)){
+            return '['+ v.join(',') + ']'
+          }
+          return v;
+        },'\t')
       }
     }
   }
