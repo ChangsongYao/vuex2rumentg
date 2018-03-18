@@ -1,7 +1,7 @@
 <template>
   <div id="app" v-cloak>
-    <button @click="reset">RESET</button>
-    <ez-counter></ez-counter>
+    <input type="number" v-model="counter">
+    <div class="counter">{{counter}}</div>
   </div>
 </template>
 
@@ -19,28 +19,21 @@
       INCREASE(state){
         state.counter++;
       },
-      RESET(state){
-        state.counter = 0;
+      RESET(state,val){
+        state.counter = val;
       }
     }
   });
 
-  const EzCounter = {
-    template:'<div class="counter">{{counter}}</div>',
-    computed:Vuex.mapState(['counter']),
-    methods:{
-      inc(){ this.$store.commit('INCREASE')}
-    },
-    created(){
-      setInterval(()=>this.inc(),1000);
-    }
-  };
-
   export default {
     name: 'App',
     store:store,
-    methods: Vuex.mapMutations({reset:'RESET'}),
-    components:{EzCounter}
+    computed:{
+      counter:{
+        get() { return this.$store.state.counter},
+        set(v){ this.$store.commit('RESET',v)}
+      }
+    }
   }
 
 </script>
