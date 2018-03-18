@@ -1,6 +1,12 @@
 <template>
-  <div id="app">
-    <ez-counter></ez-counter>
+  <div id="app" v-cloak>
+    <input :value="q" @change="search($event.target.value)" placeholder="search sth.">
+    <div v-html="status" class="status"></div>
+    <div class="result">
+      <div class="item" v-for="item in result">
+        {{item.title}}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -10,46 +16,77 @@
 
   Vue.use(Vuex)
 
+  const fakeSearch = (q,cb) => {
+    let ret = [];
+
+    for(let i=1;i<11;i++) ret.push({
+      title:'result item ' + i + '#'
+    });
+
+    setTimeout(()=>cb(ret),2000)
+  }
+
   const store = new Vuex.Store({
     state:{
-      counter:0
+      q:'',
+      result:[],
+      status:''
     },
     mutations:{
-      INCREASE(state){
-        state.counter++;
-      }
+      UPDATE_QUERY:(state,value) => state.q = value,
+      UPDATE_STATUS:(state,value) => state.status = value,
+      UPDATE_RESULT:(state,value) => state.result = value
     },
     actions:{
-      inc(context){
-        context.commit('INCREASE');
+      search(context,q){
+        context.commit('UPDATE_RESULT',[])
+        context.commit('UPDATE_QUERY',q)
+        context.commit('UPDATE_STATUS','searching <b>' + q +'</b>...')
+
+        fakeSearch(q,result =>{
+          context.commit('UPDATE_STATUS','')
+          context.commit('UPDATE_RESULT',result)
+        })
       }
     }
-  });
-
-  const EzCounter = {
-    template: '<div class="counter">{{counter}}</div>',
-    computed:Vuex.mapState(['counter']),
-    methods:{
-      inc(){ this.$store.dispatch('inc') }
-    },
-    created(){
-      setInterval(()=>this.inc(),100);
-    }
-
-  };
+  })
 
   export default {
     name: 'App',
     store:store,
-    components:{EzCounter}
+    computed:{
+      ...Vuex.mapState(['result','status']),
+      q:{
+        get(){return this.$store.state.q},
+        set(v){ this.$store.commit('set_q',v)}
+      }
+    },
+    methods:{
+      search(q){
+        this.$store.dispatch('search',q);
+      }
+    }
   }
 
 </script>
 
 <style>
-  .counter{
-    font-family:LED;
-    font-size:100px;
+  input{
+    line-height:40px;
+    width:100%;
+  }
+  .status{
+    padding:10px;
+  }
+  .result{
+    margin-top:10px;
+  }
+  .item{
+    line-height:50px;
+    height:50px;
+    margin-bottom:5px;
+    padding:0 10px;
+    background:#e1efe4;
   }
   [v-cloak]:after{
     content:' ';
