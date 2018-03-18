@@ -1,7 +1,6 @@
 <template>
   <div id="app" v-cloak>
     <ez-counter></ez-counter>
-    <ez-clock></ez-clock>
   </div>
 </template>
 
@@ -14,22 +13,14 @@
   const modCounter = {
     namespaced:true,
     state:{counter:0},
-    mutations:{ INCREASE(state){state.counter++} },
-    actions:{ inc(context){context.commit('INCREASE')}}
+    getters:{  doubled:state=>state.counter*2 },
+    mutations:{ INCREASE:state => state.counter++ },
+    actions:{ inc: context => context.commit('INCREASE')}
   }
 
-  const modClock = {
-    namespaced:true,
-    state:{time:Date.now()},
-    mutations:{SET_TIME(state,val){state.time = val}},
-    actions:{ setTime(context,val){context.commit('SET_TIME',val)}}
-  }
 
   const store = new Vuex.Store({
-    modules:{
-      m1: modCounter,
-      m2: modClock
-    }
+    modules:{m1: modCounter}
   });
 
   const EzCounter = {
@@ -45,25 +36,10 @@
     }
   }
 
-  const EzClock = {
-    template:'<div class="clock">{{time}}</div>',
-    computed:{
-      time(){ return moment(this.$store.state.m2.time).format('LTS')}
-    },
-    methods:{
-      setTime(){
-        this.$store.dispatch('m2/setTime',Date.now())
-      }
-    },
-    created(){
-      setInterval(()=>this.setTime(),1000)
-    }
-  }
-
   export default {
     name: 'App',
     store:store,
-    components:{EzCounter,EzClock}
+    components:{EzCounter}
   }
 
 </script>
