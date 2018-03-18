@@ -11,15 +11,24 @@
 
   Vue.use(Vuex)
 
-  const bus = new Vue();
+  const store = new Vue({
+    data:{
+      notes:[],
+      active:{}
+    }
+  });
 
   const EzNoteList = {
     template:'#tpl-list',
-    data(){
-      return {
-        notes:[],
-        active:{}
-      };
+    computed:{
+      notes:{
+        get(){ return store.notes;},
+        set(v){ store.notes = v;}
+      },
+      active:{
+        get(){ return store.active;},
+        set(v){ store.active = v;}
+      }
     },
     methods:{
       add(){
@@ -37,23 +46,16 @@
       slice(v,start,end){
         return v.slice(start,end);
       }
-    },
-    watch:{
-      active(nv){
-        bus.$emit('NOTE_CHANGED',nv);
-      }
     }
   };
 
   const EzNoteEditor = {
     template:'#tpl-editor',
-    data(){
-      return {
-        note:{text:''}
+    computed:{
+      note:{
+        get(){ return store.active;},
+        set(v){ store.active = v;}
       }
-    },
-    created(){
-      bus.$on('NOTE_CHANGED',note => this.note = note);
     }
   };
 
